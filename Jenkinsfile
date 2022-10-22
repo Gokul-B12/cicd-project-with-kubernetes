@@ -89,7 +89,7 @@ pipeline {
                         dockerImage.push("v$BUILD_NUMBER")
                         dockerImage.push("latest")
                     }
-                    )
+                    
                 }
             }
         }
