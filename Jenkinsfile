@@ -101,7 +101,7 @@ pipeline {
         }
 
         stage("Deploying img in K8s"){
-            agent(label 'kops')
+            agent{label 'kops'}
             steps{
                 sh "helm upgrade --install --force vprofile-stack helm/vprofilecharts --set tomappimg=${registry}:v${BUILD_NUMBER} --namespace prod"
             }
