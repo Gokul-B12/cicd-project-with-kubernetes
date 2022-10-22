@@ -1,10 +1,11 @@
 pipeline {
 
     agent any
-
+/*
 	tools {
         maven "Maven3"
     }
+    */
 
     environment {
         registry = "gokulb12/kube-cicdimg"
