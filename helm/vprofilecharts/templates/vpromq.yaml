@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vpromq
+spec:
+  selector:
+    matchLabels:
+      app: vpromq
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vpromq
+    spec:
+      containers:
+      - name: vpromq
+        image: rabbitmq        #official image from docker hub
+        ports:
+        - name: vpromq-port
+          containerPort: 15672
+        #it has username and password... so we need to provide that.
+        env:
+          - name: RABBIT_DEFAULT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: rmq-pass
+          - name: RABBIT_DEFAULT_USER
+            value: "guest"

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vprotom
+spec:
+  selector:
+    matchLabels:
+      app: vprotom
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vprotom
+    spec:
+      containers:
+      - name: vprotom
+        image: {{.Values.tomappimg}}      #from my docker hub repo
+        ports:
+        - name: vprotom-port
+          containerPort: 8080
+      initContainers:  #this is dummy container ..purpose: we need to initialise tomcat container after db and memcache container got created.. read the cmd u will understand and see what busybox img is.
+        - name: init-mydb
+          image: busybox
+          command: ["sh", '-c', 'until nslookup vprodb; do echo waiting for mydb; sleep 2; done;']
+        - name: init-memcached
+          image: busybox
+          command: ["sh", '-c', 'until nslookup vprocache01; do echo waiting for mydb; sleep 2; done;']
+          #these initcontaners will be dead once the cmds executes successfully.
+          # nslookup vprodb and vprocache01 name is from app prop file
+         
