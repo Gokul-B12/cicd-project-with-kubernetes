@@ -1,11 +1,11 @@
 pipeline {
 
     agent any
-/*
+
 	tools {
-        maven "maven3"
+        maven "Maven3"
     }
-*/
+
     environment {
         registry = "gokulb12/kube-cicdimg"
         registryCredential = "dockerhub"
