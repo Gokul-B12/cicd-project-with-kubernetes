@@ -3,16 +3,19 @@ pipeline {
     agent any
 /*
 	tools {
-        maven "maven3"
+        maven "Maven3"
     }
-*/
+    */
+
     environment {
-        registry = "gokulb12/vproappdocker"
-        registryCredential = 'dockerhub'
+        registry = "gokulb12/kube-cicdimg"
+        registryCredential = "dockerhub"
+        ARTVERSION = "${env.BUILD_ID}"
     }
 
     stages{
 
+        
         stage('BUILD'){
             steps {
                 sh 'mvn clean install -DskipTests'
@@ -24,20 +27,19 @@ pipeline {
                 }
             }
         }
-    /*
+/*
         stage('UNIT TEST'){
             steps {
                 sh 'mvn test'
             }
         }
-    
+
         stage('INTEGRATION TEST'){
             steps {
                 sh 'mvn verify -DskipUnitTests'
             }
         }
-    */
-    
+*/
 
         stage ('CODE ANALYSIS WITH CHECKSTYLE'){
             steps {
@@ -48,32 +50,6 @@ pipeline {
                     echo 'Generated Analysis Result'
                 }
             }
-        }
-
-
-        stage('Building image') {
-            steps{
-              script {
-                dockerImage = docker.build registry + ":$BUILD_NUMBER"
-              }
-            }
-        }
-        
-        stage('Deploy Image') {
-          steps{
-            script {
-              docker.withRegistry( '', registryCredential ) {
-                dockerImage.push("$BUILD_NUMBER")
-                dockerImage.push('latest')
-              }
-            }
-          }
-        }
-
-        stage('Remove Unused docker image') {
-          steps{
-            sh "docker rmi $registry:$BUILD_NUMBER"
-          }
         }
 
         stage('CODE ANALYSIS with SONARQUBE') {
@@ -99,12 +75,43 @@ pipeline {
                 }
             }
         }
-        stage('Kubernetes Deploy') {
-	  agent { label 'kops' }
-            steps {
-                    sh "helm upgrade --install --force vproifle-stack helm/vprofilecharts --set appimage=${registry}:${BUILD_NUMBER} --namespace prod"
+
+        stage('Bluid App Image')
+        {
+            steps{
+                script {
+                    dockerImage = docker.build registry + ":v$BUILD_NUMBER"
+                }
             }
         }
+        stage("Upload image") {
+            steps{
+                script{
+                    docker.withRegistry("", registryCredential){
+                        dockerImage.push("v$BUILD_NUMBER")
+                        dockerImage.push("latest")
+                    }
+                    
+                }
+            }
+        }
+
+        stage("Remove unused docker images") {
+            steps{
+                sh "docker rmi $registry:v$BUILD_NUMBER"
+            }
+        }
+
+        stage("Deploying img in K8s"){
+            agent{label 'kops'}
+            steps{
+                sh "helm upgrade --install --force vprofile-stack helm/vprofilecharts --set tomappimg=${registry}:v${BUILD_NUMBER} --namespace prod"
+            }
+        }
+    
+
+
+
 
     }
 
