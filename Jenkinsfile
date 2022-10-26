@@ -27,6 +27,7 @@ pipeline {
                 }
             }
         }
+    /*
 
         stage('UNIT TEST'){
             steps {
@@ -39,6 +40,7 @@ pipeline {
                 sh 'mvn verify -DskipUnitTests'
             }
         }
+    */
 
 
         stage ('CODE ANALYSIS WITH CHECKSTYLE'){
